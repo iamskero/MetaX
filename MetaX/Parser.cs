@@ -13,15 +13,20 @@ namespace MetaX
         /// </summary>
         /// <param name="fileLoc"></param>
         /// <param name="count"></param>
-        public static List<Exchange> ParseNExchanges(string fileLoc, int count = 10)
+        public static List<Exchange> ParseNExchanges(string fileLoc, int count = 0)
         {
             if (File.Exists(fileLoc))
             {
                 List<Exchange> exchangesData = new List<Exchange>();
                 int idCounter = 0;
-                File.ReadLines(fileLoc)
-                    .Take(count)
-                    .ToList()
+                var files = File.ReadLines(fileLoc);
+
+                if(count > 0)
+                {
+                    files = files.Take(count);
+                }
+
+                    files.ToList()
                     .ForEach(l =>
                     {
                         var stringWithOrderBookInfo = l.Substring(l.IndexOf("{"));
