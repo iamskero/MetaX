@@ -28,11 +28,13 @@ namespace MetaX
 
             #region orders sorted then by balance on the exchanges (exchanges of given orders)
             Func<Order, decimal> sortByBalance = o => o.ownerExchange.UserBalance.EUR;
-            var ordersSortedByPriceAscAndBalanceDesc = GetSortedOrdersBySecond(ordersSortedByPriceAsc, sortByBalance, true);
+            var ordersSortedByPriceAscAndBalanceDesc = GetSortedOrdersBySecond(ordersSortedByPriceAsc, sortByBalance, false);
             #endregion
 
             #region actual buying order
             var rez = ordersSortedByPriceAscAndBalanceDesc.ToList();
+
+            // rez.Select(i => new { price = i.Price, exchangeId = i.ownerExchange.ID, balanceEUR = i.ownerExchange.UserBalance.EUR} )
             return TxOperation(rez, amountBTC);
             #endregion            
         }

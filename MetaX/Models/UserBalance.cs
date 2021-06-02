@@ -17,7 +17,7 @@ namespace MetaX.Models
             Random rnd = new Random();
 
             BTC = (decimal)rnd.NextDouble();
-            EUR = (decimal)rnd.NextDouble();
+            EUR = (decimal)rnd.NextDouble() * 100000;
         }
     }
 }

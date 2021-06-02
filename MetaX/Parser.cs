@@ -18,7 +18,7 @@ namespace MetaX
             if (File.Exists(fileLoc))
             {
                 List<Exchange> exchangesData = new List<Exchange>();
-
+                int idCounter = 0;
                 File.ReadLines(fileLoc)
                     .Take(count)
                     .ToList()
@@ -26,7 +26,7 @@ namespace MetaX
                     {
                         var stringWithOrderBookInfo = l.Substring(l.IndexOf("{"));
                         var orderBook = JsonSerializer.Deserialize<OrderBook>(stringWithOrderBookInfo);
-                        var exchange = new Exchange { UserBalance = new UserBalance(), OrderBook = orderBook };
+                        var exchange = new Exchange { ID = idCounter++, UserBalance = new UserBalance(), OrderBook = orderBook };
 
                         #region CRD, possible TODO: find more optimal way, like separate list with ids or smth
                         orderBook.Asks.ForEach(w => w.ownerExchange = exchange);
