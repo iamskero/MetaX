@@ -4,7 +4,7 @@ using System.Text;
 
 namespace MetaX.Models
 {
-    class UserBalance
+    public class UserBalance
     {
         public decimal BTC { get; set; }
         public decimal EUR { get; set; }

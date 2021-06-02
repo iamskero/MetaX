@@ -10,6 +10,8 @@ namespace MetaX
         /// <param name="args"></param>
         static void Main(string[] args)
         {
+            var exchangeData = Parser.ParseNExchanges(@"C:\Users\matej\Desktop\naloge\order_books_data");
+        
             Console.WriteLine("Hello World!");
         }
     }
