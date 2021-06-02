@@ -27,5 +27,8 @@ namespace MetaX.Models
         public decimal Amount { get; set; }
 
         public decimal Price { get; set; }
+
+        // circ ref todo: possible other ways..more clunky but more "economic"
+        public Exchange ownerExchange { get; set; }
     }
 }

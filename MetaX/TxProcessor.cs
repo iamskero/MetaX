@@ -13,17 +13,95 @@ namespace MetaX
             exchangesData = ed;
         }
 
-        public List<object> FindBestBuy(decimal amountBTC)
+        public List<Tx> FindBestBuy(decimal amountBTC)
         {
-            var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(false);
+            // asumption is that ordering by price then by our exchange position is the best way to go around this to get most optimal buys
+
+            #region all orders from all exchanges
+            var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(true);
+            #endregion
 
             #region orders sorted by price desc
             Func<Order, decimal> sortByPrice = o => o.Price;
-            var ordersSortedByPriceDesc = GetSortedOrders(ordersFromAllExchanges, sortByPrice, false);
+            var ordersSortedByPriceAsc = GetSortedOrders(ordersFromAllExchanges, sortByPrice, true);
             #endregion
 
-            return null;
+            #region orders sorted then by balance on the exchanges (exchanges of given orders)
+            Func<Order, decimal> sortByBalance = o => o.ownerExchange.UserBalance.EUR;
+            var ordersSortedByPriceAscAndBalanceDesc = GetSortedOrdersBySecond(ordersSortedByPriceAsc, sortByBalance, true);
+            #endregion
+
+            #region actual buying order
+            var rez = ordersSortedByPriceAscAndBalanceDesc.ToList();
+            return TxOperation(rez, amountBTC);
+            #endregion            
         }
+
+        #region buying/spending spree
+        /// <summary>
+        /// buy up the orders up to the amount
+        /// </summary>
+        /// <param name="orders"></param>
+        /// <param name="amountBTC"></param>
+        /// <returns></returns>
+        //private List<Tx> Buy(List<Order> orders, decimal amountBTC)
+        //{
+        //    var toBuy = amountBTC;
+        //    var counter = 0;
+        //    List<Tx> txs = new List<Tx>();
+
+        //    while (toBuy != 0)
+        //    {
+        //        var order = orders[counter++];
+        //        var availableAmount = order.Amount; //could use stack for poppin this exchange ..as done, but assuming we dont need to track exchange status, no persistence etc
+
+        //        if (toBuy - availableAmount >= 0)
+        //            toBuy -= availableAmount;
+        //        else toBuy = 0;
+
+        //        var tx = new Tx() { Amount = availableAmount, ExchangeID =  order.ownerExchange.ID, OrderID = order.Id, Price = order.Price };
+        //        txs.Add(tx);
+
+        //        if (counter > orders.Count - 1)
+        //            throw new Exception("All bought up yo! Bill Gates' spending.");
+        //    }
+
+        //    return txs;
+        //}
+
+        private List<Tx> TxOperation(List<Order> orders, decimal amountBTC)
+        {
+            var counter = 0;
+            List<Tx> txs = new List<Tx>();
+
+            while (amountBTC != 0)
+            {
+                var order = orders[counter++];
+                var availableAmount = order.Amount; //could use stack for poppin this exchange ..as done, but assuming we dont need to track exchange status, no persistence etc
+
+                decimal amountUsed;
+                if (amountBTC - availableAmount >= 0)
+                {
+                    amountBTC -= availableAmount;
+                    amountUsed = availableAmount;
+                }
+                else
+                {
+                    amountUsed = amountBTC;
+                    amountBTC = 0;
+
+                }
+
+                var tx = new Tx() { Amount = amountUsed, ExchangeID = order.ownerExchange.ID, OrderID = order.Id, Price = order.Price };
+                txs.Add(tx);
+
+                if (counter > orders.Count - 1)
+                    throw new Exception("Ran out of volume <sad face />");
+            }
+
+            return txs;
+        }
+        #endregion
 
         /// <summary>
         /// Get the orders from all the exchanges in a single list
@@ -57,6 +135,22 @@ namespace MetaX
                 return orders.OrderBy(sortingFunc);
             }
             else return orders.OrderByDescending(sortingFunc);
+        }
+
+        /// <summary>
+        /// Sort ordered enum
+        /// </summary>
+        /// <param name="orders"></param>
+        /// <param name="thenBySortingFunc"></param>
+        /// <param name="sortAsc"></param>
+        /// <returns></returns>
+        private IOrderedEnumerable<Order> GetSortedOrdersBySecond(IOrderedEnumerable<Order> orders, Func<Order, decimal> thenBySortingFunc, bool sortAsc)
+        {
+            if (sortAsc)
+            {
+                return orders.ThenBy(thenBySortingFunc);
+            }
+            else return orders.ThenByDescending(thenBySortingFunc);
         }
         #endregion
     }

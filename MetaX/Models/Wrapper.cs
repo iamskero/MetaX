@@ -6,5 +6,13 @@
     public class Wrapper
     {
         public Order Order { get; set; }
+        
+        public Exchange ownerExchange
+        {
+            set
+            {
+                Order.ownerExchange = value;
+            }
+        }
     }
 }

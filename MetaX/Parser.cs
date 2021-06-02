@@ -26,12 +26,17 @@ namespace MetaX
                     {
                         var stringWithOrderBookInfo = l.Substring(l.IndexOf("{"));
                         var orderBook = JsonSerializer.Deserialize<OrderBook>(stringWithOrderBookInfo);
-
                         var exchange = new Exchange { UserBalance = new UserBalance(), OrderBook = orderBook };
+
+                        #region CRD, possible TODO: find more optimal way, like separate list with ids or smth
+                        orderBook.Asks.ForEach(w => w.ownerExchange = exchange);
+                        orderBook.Bids.ForEach(w => w.ownerExchange = exchange);
+                        #endregion
+
+                        exchangesData.Add(exchange);
                     });
 
-
-                return null;
+                return exchangesData;
             }
             else throw new FileNotFoundException("Wrong file path");
 
