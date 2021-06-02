@@ -13,6 +13,11 @@ namespace MetaX
             exchangesData = ed;
         }
 
+        /// <summary>
+        /// Finding best buy with for the existing balance of EUR
+        /// </summary>
+        /// <param name="amountBTC"></param>
+        /// <returns></returns>
         public List<Tx> FindBestBuy(decimal amountBTC)
         {
             // asumption is that ordering by price then by our exchange position is the best way to go around this to get most optimal buys
@@ -21,7 +26,7 @@ namespace MetaX
             var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(true);
             #endregion
 
-            #region orders sorted by price desc
+            #region orders sorted by price asc
             Func<Order, decimal> sortByPrice = o => o.Price;
             var ordersSortedByPriceAsc = GetSortedOrders(ordersFromAllExchanges, sortByPrice, true);
             #endregion
@@ -37,6 +42,33 @@ namespace MetaX
             // rez.Select(i => new { price = i.Price, exchangeId = i.ownerExchange.ID, balanceEUR = i.ownerExchange.UserBalance.EUR} )
             return TxOperation(rez, amountBTC);
             #endregion            
+        }
+
+        /// <summary>
+        /// Selling amount of BTC for the highest prices for the existing balance of BTC across exchanges
+        /// </summary>
+        /// <param name="BTC"></param>
+        public List<Tx> FindBestSell(decimal amountBTC)
+        {
+            #region all orders from all exchanges
+            var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(false);
+            #endregion
+
+            #region orders sorted by price desc
+            Func<Order, decimal> sortByPrice = o => o.Price;
+            var ordersSortedByPriceDesc = GetSortedOrders(ordersFromAllExchanges, sortByPrice, false);
+            #endregion
+
+            #region orders sorted then by balance on the exchanges (exchanges of given orders)
+            Func<Order, decimal> sortByBalance = o => o.ownerExchange.UserBalance.BTC;
+            var ordersSortedByPriceDescAndBalanceDesc = GetSortedOrdersBySecond(ordersSortedByPriceDesc, sortByBalance, false);
+            #endregion
+
+            #region actual buying order
+            var rez = ordersSortedByPriceDescAndBalanceDesc.ToList();
+            // rez.Select(i => new { price = i.Price, exchangeId = i.ownerExchange.ID, balanceEUR = i.ownerExchange.UserBalance.BTC} )
+            return TxOperation(rez, amountBTC);
+            #endregion 
         }
 
         #region buying/spending spree

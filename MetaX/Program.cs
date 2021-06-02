@@ -16,6 +16,8 @@ namespace MetaX
             var buyTxs = tp.FindBestBuy(10.5m);
             Console.WriteLine($"Bought {buyTxs.GetAmountSum()} of BTC for {buyTxs.GetOpSum()}");
 
+            var txsSell = tp.FindBestSell(200);
+            Console.WriteLine($"Sold {txsSell.GetAmountSum()} of BTC for {txsSell.GetOpSum()}");
 
             Console.WriteLine("Hello World!");
         }
