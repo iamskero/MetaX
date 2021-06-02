@@ -45,7 +45,7 @@ namespace MetaX
                 Console.WriteLine($"Sold {txsSell.GetAmountSum()} of BTC for {decimal.Round(txsSell.GetOpSum(), 2)} €");
 
                 #region tx printout
-                Console.WriteLine("Press b for buying details or s for selling details, or anything else to exit");
+                Console.WriteLine("Press b for buying details or s for selling details, or x to exit");
 
                 string key = "";
                 while (key != "x")
@@ -60,8 +60,7 @@ namespace MetaX
                     {
                         txsSell.PrintTxs();
                     }
-                }
-                
+                }                
                 #endregion
             }
             catch (Exception e)
