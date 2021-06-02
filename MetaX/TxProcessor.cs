@@ -111,10 +111,10 @@ namespace MetaX
             while (amountBTC != 0)
             {
                 var order = orders[counter++];
-                var availableAmount = order.Amount; //could use stack for poppin this exchange ..as done, but assuming we dont need to track exchange status, no persistence etc
+                var availableAmount = order.Amount; //could use stack for poppin this exchange ..marking as done, but assuming we dont need to track exchange status, no persistence etc
 
                 decimal amountUsed;
-                if (amountBTC - availableAmount >= 0)
+                if (amountBTC - availableAmount >= 0) //even with 8 places it should be ok
                 {
                     amountBTC -= availableAmount;
                     amountUsed = availableAmount;
@@ -123,14 +123,13 @@ namespace MetaX
                 {
                     amountUsed = amountBTC;
                     amountBTC = 0;
-
                 }
 
                 var tx = new Tx() { Amount = amountUsed, ExchangeID = order.ownerExchange.ID, OrderID = order.Id, Price = order.Price };
                 txs.Add(tx);
 
                 if (counter > orders.Count - 1)
-                    throw new Exception("Ran out of volume <sad face />");
+                    throw new Exception("Ran out of volume <sad face />"); // should we continue operation and sell/buy as much as we can or fail?
             }
 
             return txs;

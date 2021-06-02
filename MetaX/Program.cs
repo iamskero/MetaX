@@ -10,16 +10,61 @@ namespace MetaX
         /// <param name="args"></param>
         static void Main(string[] args)
         {
-            var exchangeData = Parser.ParseNExchanges(@"C:\Users\matej\Desktop\naloge\order_books_data");
-            TxProcessor tp = new TxProcessor(exchangeData);
+            Console.WriteLine("Params are \r\n1.exchange data file path (orderbooks)\r\n2.amount of BTC you want to buy\r\n3.amount of BTC you want to sell\r\nAny potential buy or sell values under value of satoshi will be omitted - decimals will be cut!");
 
-            var buyTxs = tp.FindBestBuy(10.5m);
-            Console.WriteLine($"Bought {buyTxs.GetAmountSum()} of BTC for {buyTxs.GetOpSum()}");
+            string filename;
+            decimal btcToBuy;
+            decimal btcToSell;
 
-            var txsSell = tp.FindBestSell(200);
-            Console.WriteLine($"Sold {txsSell.GetAmountSum()} of BTC for {txsSell.GetOpSum()}");
+            if (args.Length == 0)
+            {
+                filename = @"C:\Users\matej\Desktop\naloge\order_books_data";
+                btcToBuy = 100.5m;
+                btcToSell = 100.5m;
+                Console.WriteLine($"Taking default filepath of {filename}\r\nand default buy of {btcToBuy} BTC\r\nand default sell of {btcToSell} BTC");
+            }
+            else
+            {
+                filename = args[0];
+                btcToBuy = decimal.Round(decimal.Parse(args[1]), 8); // cant have you going around with 0,x satoshi
+                btcToSell = decimal.Round(decimal.Parse(args[2]), 8); // cant have you going around with 0,x satoshi
+            }
 
-            Console.WriteLine("Hello World!");
+            try
+            {
+                var exchangeData = Parser.ParseNExchanges(filename);
+                TxProcessor tp = new TxProcessor(exchangeData);
+
+                var buyTxs = tp.FindBestBuy(btcToSell);
+                Console.WriteLine($"Bought {buyTxs.GetAmountSum()} of BTC for {decimal.Round(buyTxs.GetOpSum(), 2)} €");
+
+                var txsSell = tp.FindBestSell(btcToBuy);
+                Console.WriteLine($"Sold {txsSell.GetAmountSum()} of BTC for {decimal.Round(txsSell.GetOpSum(), 2)} €");
+
+
+                Console.WriteLine("Press b for buying details or s for selling details, or anything else to exit");
+
+                string key = "";
+                while (key != "x")
+                {
+                    key = Console.ReadLine();
+
+                    if (key == "b")
+                    {
+                        buyTxs.PrintTxs(false);
+                    }
+                    else if (key == "s")
+                    {
+                        txsSell.PrintTxs();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                //should the failures be fatal?
+                Console.WriteLine(e);
+            }
+
         }
     }
 }
