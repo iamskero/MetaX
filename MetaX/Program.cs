@@ -5,7 +5,7 @@ namespace MetaX
     class Program
     {
         /// <summary>
-        /// Simple example, no DI, no logging...no nada
+        /// Simple example, no DI, no logging, no unit/int tests...no nada
         /// </summary>
         /// <param name="args"></param>
         static void Main(string[] args)
@@ -21,13 +21,13 @@ namespace MetaX
                 filename = @"C:\Users\matej\Desktop\naloge\order_books_data";
                 btcToBuy = 100.5m;
                 btcToSell = 100.5m;
-                Console.WriteLine($"Taking default filepath of {filename}\r\nand default buy of {btcToBuy} BTC\r\nand default sell of {btcToSell} BTC");
+                Console.WriteLine($"Manual tests - Taking default filepath of {filename}\r\nand default buy of {btcToBuy} BTC\r\nand default sell of {btcToSell} BTC");
             }
             else
             {
                 filename = args[0];
-                btcToBuy = decimal.Round(decimal.Parse(args[1]), 8); // cant have you going around with 0,x satoshi
-                btcToSell = decimal.Round(decimal.Parse(args[2]), 8); // cant have you going around with 0,x satoshi
+                btcToBuy = Math.Abs((decimal.Parse(args[1]).TruncateToSatoshi())); // cant have negatives or under sat
+                btcToSell = Math.Abs((decimal.Parse(args[2]).TruncateToSatoshi())); // cant have negatives or under sat
             }
 
             try
@@ -35,13 +35,13 @@ namespace MetaX
                 var exchangeData = Parser.ParseNExchanges(filename);
                 TxProcessor tp = new TxProcessor(exchangeData);
 
-                var buyTxs = tp.FindBestBuy(btcToSell);
+                var buyTxs = tp.FindBestBuy(btcToBuy);
                 Console.WriteLine($"Bought {buyTxs.GetAmountSum()} of BTC for {decimal.Round(buyTxs.GetOpSum(), 2)} €");
 
-                var txsSell = tp.FindBestSell(btcToBuy);
+                var txsSell = tp.FindBestSell(btcToSell);
                 Console.WriteLine($"Sold {txsSell.GetAmountSum()} of BTC for {decimal.Round(txsSell.GetOpSum(), 2)} €");
 
-
+                #region tx printout
                 Console.WriteLine("Press b for buying details or s for selling details, or anything else to exit");
 
                 string key = "";
@@ -58,10 +58,11 @@ namespace MetaX
                         txsSell.PrintTxs();
                     }
                 }
+                
+                #endregion
             }
             catch (Exception e)
-            {
-                //should the failures be fatal?
+            {                
                 Console.WriteLine(e);
             }
 

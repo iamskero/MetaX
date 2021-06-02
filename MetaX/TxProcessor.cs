@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace MetaX
 {
-    class TxProcessor
+    public class TxProcessor
     {
         private List<Exchange> exchangesData;
         public TxProcessor(List<Exchange> ed)
@@ -20,7 +20,12 @@ namespace MetaX
         /// <returns></returns>
         public List<Tx> FindBestBuy(decimal amountBTC)
         {
+            amountBTC = amountBTC.TruncateToSatoshi();
             // asumption is that ordering by price then by our exchange position is the best way to go around this to get most optimal buys
+            if(amountBTC <= 0)
+            {
+                throw new Exception("Nothing to do here");
+            }
 
             #region all orders from all exchanges
             var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(true);
@@ -50,6 +55,11 @@ namespace MetaX
         /// <param name="BTC"></param>
         public List<Tx> FindBestSell(decimal amountBTC)
         {
+            if (amountBTC <= 0)
+            {
+                throw new Exception("Nothing to do here");
+            }
+
             #region all orders from all exchanges
             var ordersFromAllExchanges = GetOrdersFromAllExchangesNormalized(false);
             #endregion
@@ -129,7 +139,7 @@ namespace MetaX
                 txs.Add(tx);
 
                 if (counter > orders.Count - 1)
-                    throw new Exception("Ran out of volume <sad face />"); // should we continue operation and sell/buy as much as we can or fail?
+                    throw new Exception("Ran out of volume <sad face />"); // should we continue operation and sell/buy as much as we can or fail? Should errors be fatal?
             }
 
             return txs;

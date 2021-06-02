@@ -26,5 +26,26 @@ namespace MetaX
                 Console.WriteLine($"Amount of {tx.Amount} {verb} from exchange {tx.ExchangeID} with order {tx.OrderID} at {tx.Price} EUR/BTC");
             });
         }
+
+        /// <summary>
+        /// truncate decimals - interwebs solution:)
+        /// </summary>
+        /// <param name="btc"></param>
+        /// <returns></returns>
+        public static decimal TruncateToSatoshi(this decimal btc)
+        {
+            decimal r = Math.Round(btc, 8);
+
+            if (btc > 0 && r > btc)
+            {
+                return r - new decimal(1, 0, 0, false, 8);
+            }
+            else if (btc < 0 && r < btc)
+            {
+                return r + new decimal(1, 0, 0, false, 8);
+            }
+
+            return r;
+        }
     }
 }
